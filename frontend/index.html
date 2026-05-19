@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Resume Search Agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0b0f1a;
+      --surface:   #111827;
+      --card:      #161d2e;
+      --border:    #1f2d45;
+      --accent:    #3b82f6;
+      --accent2:   #06b6d4;
+      --success:   #10b981;
+      --warn:      #f59e0b;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --subtle:    #1e293b;
+      --font-head: 'Syne', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /*  BACKGROUND GRID  */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /*  GLOW BLOB  */
+    .glow-blob {
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 500px;
+      background: radial-gradient(ellipse, rgba(59,130,246,0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /*  LAYOUT  */
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /*  HEADER  */
+    header {
+      padding: 52px 0 48px;
+      text-align: center;
+      animation: fadeDown 0.7s ease both;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(59,130,246,0.1);
+      border: 1px solid rgba(59,130,246,0.25);
+      border-radius: 100px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--accent);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 22px;
+    }
+
+    .header-badge span {
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    h1 {
+      font-family: var(--font-head);
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      background: linear-gradient(135deg, #e2e8f0 30%, #3b82f6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 14px;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      color: var(--muted);
+      font-weight: 300;
+      letter-spacing: 0.01em;
+    }
+
+    /*  SEARCH BOX  */
+    .search-section {
+      animation: fadeUp 0.7s 0.15s ease both;
+    }
+
+    .search-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 14px;
+      transition: border-color 0.2s;
+    }
+
+    .search-box:focus-within {
+      border-color: rgba(59,130,246,0.5);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.08);
+    }
+
+    .search-input-row {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .input-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .input-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    input[type="text"], input[type="number"] {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 15px;
+      padding: 12px 16px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      width: 100%;
+    }
+
+    input[type="text"]:focus, input[type="number"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+    }
+
+    input::placeholder { color: var(--muted); }
+
+    .filter-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* SEARCH BUTTON */
+    .btn-search {
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      cursor: pointer;
+      font-family: var(--font-head);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      padding: 12px 28px;
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+      white-space: nowrap;
+      align-self: flex-end;
+    }
+
+    .btn-search:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(59,130,246,0.35); }
+    .btn-search:active { transform: translateY(0); }
+    .btn-search:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /*  QUICK CHIPS  */
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+
+    .chip {
+      background: var(--subtle);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 13px;
+      transition: all 0.15s;
+    }
+
+    .chip:hover {
+      background: rgba(59,130,246,0.1);
+      border-color: rgba(59,130,246,0.3);
+      color: var(--accent);
+    }
+
+    /*  STATUS BAR  */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .status-text {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .status-text strong { color: var(--text); }
+
+    .understood-pill {
+      background: rgba(16,185,129,0.1);
+      border: 1px solid rgba(16,185,129,0.2);
+      border-radius: 100px;
+      color: var(--success);
+      font-size: 12px;
+      padding: 4px 12px;
+      max-width: 420px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /*  RESULT CARDS  */
+    .results-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .result-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 22px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 18px;
+      align-items: start;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      animation: fadeUp 0.4s ease both;
+      cursor: default;
+    }
+
+    .result-card:hover {
+      border-color: rgba(59,130,246,0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    /* rank badge */
+    .rank-badge {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-head);
+      font-size: 14px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .rank-1 { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
+    .rank-2 { background: rgba(148,163,184,0.1); color: #94a3b8; border: 1px solid rgba(148,163,184,0.2); }
+    .rank-3 { background: rgba(180,83,9,0.1);   color: #b45309; border: 1px solid rgba(180,83,9,0.2); }
+    .rank-n { background: rgba(59,130,246,0.08); color: var(--muted); border: 1px solid var(--border); }
+
+    /* card body */
+    .card-body { min-width: 0; }
+
+    .card-name {
+      font-family: var(--font-head);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .meta-icon { font-size: 11px; }
+
+    .skills-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .skill-tag {
+      background: rgba(59,130,246,0.08);
+      border: 1px solid rgba(59,130,246,0.15);
+      border-radius: 6px;
+      color: #93c5fd;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 9px;
+    }
+
+    .skill-tag.extra {
+      background: var(--subtle);
+      border-color: var(--border);
+      color: var(--muted);
+    }
+
+    /* score + link */
+    .card-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .score-ring {
+      position: relative;
+      width: 52px; height: 52px;
+    }
+
+    .score-ring svg {
+      transform: rotate(-90deg);
+    }
+
+    .score-ring .track {
+      fill: none;
+      stroke: var(--border);
+      stroke-width: 3.5;
+    }
+
+    .score-ring .fill {
+      fill: none;
+      stroke-width: 3.5;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.8s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .score-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-head);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .btn-link {
+      background: rgba(59,130,246,0.1);
+      border: 1px solid rgba(59,130,246,0.25);
+      border-radius: 8px;
+      color: var(--accent);
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 7px 14px;
+      text-decoration: none;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn-link:hover {
+      background: rgba(59,130,246,0.2);
+      border-color: rgba(59,130,246,0.5);
+    }
+
+    /*  LOADING  */
+    .loader {
+      text-align: center;
+      padding: 60px 0;
+      animation: fadeUp 0.3s ease both;
+    }
+
+    .loader-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .loader-dots span {
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: bounce 1.2s infinite ease-in-out;
+    }
+
+    .loader-dots span:nth-child(2) { animation-delay: 0.15s; }
+    .loader-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+    .loader-text {
+      font-size: 13px;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    /*  EMPTY / ERROR  */
+    .empty-state {
+      text-align: center;
+      padding: 60px 0;
+      color: var(--muted);
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .empty-icon { font-size: 40px; margin-bottom: 14px; }
+    .empty-title { font-family: var(--font-head); font-size: 18px; color: var(--text); margin-bottom: 8px; }
+    .empty-sub { font-size: 14px; }
+
+    .error-box {
+      background: rgba(239,68,68,0.08);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 12px;
+      color: #fca5a5;
+      font-size: 14px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      animation: fadeUp 0.3s ease both;
+    }
+
+    /*  STATS BAR  */
+    .stats-strip {
+      display: flex;
+      gap: 1px;
+      background: var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 32px;
+      animation: fadeUp 0.5s 0.2s ease both;
+    }
+
+    .stat-item {
+      flex: 1;
+      background: var(--surface);
+      padding: 14px 18px;
+      text-align: center;
+    }
+
+    .stat-num {
+      font-family: var(--font-head);
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .stat-lbl {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    /*  ANIMATIONS  */
+    @keyframes fadeDown  { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:none; } }
+    @keyframes fadeUp    { from { opacity:0; transform:translateY(12px);  } to { opacity:1; transform:none; } }
+    @keyframes pulse     { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+    @keyframes bounce    { 0%,80%,100%{transform:scale(0.6);opacity:0.4;} 40%{transform:scale(1);opacity:1;} }
+
+    .result-card:nth-child(1) { animation-delay: 0.05s; }
+    .result-card:nth-child(2) { animation-delay: 0.10s; }
+    .result-card:nth-child(3) { animation-delay: 0.15s; }
+    .result-card:nth-child(4) { animation-delay: 0.20s; }
+    .result-card:nth-child(5) { animation-delay: 0.25s; }
+    .result-card:nth-child(n+6) { animation-delay: 0.30s; }
+
+    @media (max-width: 600px) {
+      .result-card { grid-template-columns: auto 1fr; }
+      .card-right { grid-column: 2; flex-direction: row; align-items: center; }
+      .filter-row { grid-template-columns: 1fr; }
+      .stats-strip { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="glow-blob"></div>
+
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-badge"><span></span> AI-Powered · ChromaDB · Ollama</div>
+    <h1>Resume Search Agent</h1>
+    <p class="subtitle">Semantic search over 20,000+ resumes — returns ranked sandbox profile links</p>
+  </header>
+
+  <!-- STATS STRIP -->
+  <div class="stats-strip" id="statsStrip">
+    <div class="stat-item">
+      <div class="stat-num" id="statTotal">—</div>
+      <div class="stat-lbl">Resumes Indexed</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" id="statResults">—</div>
+      <div class="stat-lbl">Last Results</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" id="statScore">—</div>
+      <div class="stat-lbl">Top Score</div>
+    </div>
+  </div>
+
+  <!-- SEARCH SECTION -->
+  <div class="search-section">
+    <div class="search-box">
+      <div class="search-input-row">
+        <div class="input-group">
+          <label class="input-label">Search Query</label>
+          <input type="text" id="queryInput"
+            placeholder="e.g. Python developer with FastAPI and AWS experience"
+            onfocus="this.select()"
+            autocomplete="off" />
+        </div>
+        <button class="btn-search" id="searchBtn" onclick="doSearch()">Search →</button>
+      </div>
+
+      <div class="filter-row">
+        <div class="input-group">
+          <label class="input-label">Min. Experience (years)</label>
+          <input type="number" id="expInput" placeholder="e.g. 3" min="0" max="30" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Location</label>
+          <input type="text" id="locInput" placeholder="e.g. Bangalore" />
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK CHIPS -->
+    <div class="chips">
+      <span class="chip" onclick="quickSearch('Python developer')">Python Developer</span>
+      <span class="chip" onclick="quickSearch('machine learning engineer')">ML Engineer</span>
+      <span class="chip" onclick="quickSearch('React frontend developer')">React Frontend</span>
+      <span class="chip" onclick="quickSearch('Java backend developer')">Java Backend</span>
+      <span class="chip" onclick="quickSearch('DevOps AWS Kubernetes')">DevOps / AWS</span>
+      <span class="chip" onclick="quickSearch('data analyst SQL')">Data Analyst</span>
+    </div>
+  </div>
+
+  <!-- DYNAMIC OUTPUT AREA -->
+  <div id="outputArea"></div>
+
+</div>
+
+<script>
+  const API = 'http://127.0.0.1:8000';
+
+  //  Load stats on page open 
+  async function loadStats() {
+    try {
+      const res = await fetch(`${API}/stats`);
+      const data = await res.json();
+      document.getElementById('statTotal').textContent = data.total_resumes_indexed ?? '—';
+    } catch { }
+  }
+  loadStats();
+
+  //  Enter key support 
+  document.getElementById('queryInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doSearch();
+  });
+
+  //  Quick chips 
+  function quickSearch(q) {
+    document.getElementById('queryInput').value = q;
+    doSearch();
+  }
+
+  //  Score ring colour 
+  function scoreColor(s) {
+    if (s >= 0.80) return '#10b981';
+    if (s >= 0.60) return '#3b82f6';
+    if (s >= 0.40) return '#f59e0b';
+    return '#64748b';
+  }
+
+  //  Build score ring SVG 
+  function scoreRing(score) {
+    const pct   = Math.min(score, 1);
+    const r     = 20;
+    const circ  = 2 * Math.PI * r;
+    const dash  = circ * pct;
+    const color = scoreColor(score);
+    return `
+      <div class="score-ring">
+        <svg width="52" height="52" viewBox="0 0 52 52">
+          <circle class="track" cx="26" cy="26" r="${r}"/>
+          <circle class="fill" cx="26" cy="26" r="${r}"
+            stroke="${color}"
+            stroke-dasharray="${dash} ${circ}"
+            stroke-dashoffset="0"/>
+        </svg>
+        <div class="score-label" style="color:${color}">${Math.round(score*100)}%</div>
+      </div>`;
+  }
+
+  //  Rank badge 
+  function rankBadge(rank) {
+    const cls = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : 'rank-n';
+    const icon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+    return `<div class="rank-badge ${cls}">${icon}</div>`;
+  }
+
+  //  Skill tags 
+  function skillTags(skills) {
+    if (!skills || skills.length === 0) return '<span style="font-size:12px;color:var(--muted)">No skills detected</span>';
+    const show  = skills.slice(0, 6);
+    const extra = skills.length - show.length;
+    let html = show.map(s => `<span class="skill-tag">${s}</span>`).join('');
+    if (extra > 0) html += `<span class="skill-tag extra">+${extra} more</span>`;
+    return html;
+  }
+
+  //  Main search 
+  async function doSearch() {
+    const query = document.getElementById('queryInput').value.trim();
+    if (!query) return;
+
+    const exp = document.getElementById('expInput').value;
+    const loc = document.getElementById('locInput').value.trim();
+
+    const btn = document.getElementById('searchBtn');
+    btn.disabled = true;
+    btn.textContent = 'Searching…';
+
+    const out = document.getElementById('outputArea');
+    out.innerHTML = `
+      <div class="loader">
+        <div class="loader-dots"><span></span><span></span><span></span></div>
+        <div class="loader-text">Agent is understanding your query via Ollama…</div>
+      </div>`;
+
+    const body = { query };
+    if (exp) body.min_experience = parseInt(exp);
+    if (loc) body.location = loc;
+
+    const t0 = performance.now();
+
+    try {
+      const res  = await fetch(`${API}/search`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(body)
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || 'Search failed');
+      }
+
+      const data = await res.json();
+      const ms   = Math.round(performance.now() - t0);
+
+      // Update stats strip
+      document.getElementById('statResults').textContent = data.total_results;
+      if (data.results.length > 0) {
+        document.getElementById('statScore').textContent =
+          Math.round(data.results[0].similarity_score * 100) + '%';
+      }
+
+      renderResults(data, ms);
+
+      // Automatically clear inputs after results arrive
+      document.getElementById('queryInput').value = '';
+      document.getElementById('expInput').value = '';
+      document.getElementById('locInput').value = '';
+
+    } catch (err) {
+      out.innerHTML = `
+        <div class="error-box">
+          ⚠ ${err.message}. Make sure the API is running at ${API}
+        </div>`;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Search →';
+    }
+  }
+
+  //  Render results 
+  function renderResults(data, ms) {
+    const out = document.getElementById('outputArea');
+
+    if (!data.results || data.results.length === 0) {
+      out.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <div class="empty-title">No results found</div>
+          <div class="empty-sub">Try a broader query or remove filters</div>
+        </div>`;
+      return;
+    }
+
+    const statusHtml = `
+      <div class="status-bar">
+        <span class="status-text">
+          Found <strong>${data.total_results}</strong> results in <strong>${ms}ms</strong>
+        </span>
+        <span class="understood-pill" title="${data.understood_as}">
+          💡 ${data.understood_as}
+        </span>
+      </div>`;
+
+    const cardsHtml = data.results.map(r => {
+      const name = r.candidate_name && r.candidate_name !== 'Unknown'
+        ? r.candidate_name
+        : `Candidate · ${r.file_name.replace(/\.[^.]+$/, '')}`;
+
+      return `
+        <div class="result-card">
+          ${rankBadge(r.rank)}
+          <div class="card-body">
+            <div class="card-name">${name}</div>
+            <div class="card-meta">
+              <span class="meta-item"><span class="meta-icon">💼</span>${r.experience_years} yr${r.experience_years !== 1 ? 's' : ''} exp</span>
+              <span class="meta-item"><span class="meta-icon">📍</span>${r.location !== 'Unknown' ? r.location : 'Location N/A'}</span>
+              <span class="meta-item"><span class="meta-icon">📄</span>${r.file_name}</span>
+            </div>
+            <div class="skills-wrap">${skillTags(r.matched_skills)}</div>
+          </div>
+          <div class="card-right">
+            ${scoreRing(r.similarity_score)}
+            <a class="btn-link" href="${r.sandbox_link}" target="_blank" rel="noopener">
+              View Profile →
+            </a>
+          </div>
+        </div>`;
+    }).join('');
+
+    out.innerHTML = statusHtml + `<div class="results-grid">${cardsHtml}</div>`;
+  }
+</script>
+</body>
+</html>

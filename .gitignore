@@ -1,0 +1,25 @@
+#  Environment & Secrets 
+.env
+
+.vscode/
+#  ChromaDB vector store (generated, not source code) 
+chroma_db
+
+#  Python 
+__pycache__/
+__init__.py
+*.py[cod]
+*.pyo
+venv/
+*.egg-info/
+
+#  Logs 
+api.log
+ingest.log
+
+#  OS 
+.DS_Store
+Thumbs.db
+
+resumes
+
