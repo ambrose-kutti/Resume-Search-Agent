@@ -74,7 +74,6 @@ Before you begin, ensure you have the following installed:
     source venv/bin/activate  # On Windows use `venv\Scripts\activate`
    
     ```
-    *Note: A `requirements.txt` file is crucial for a production-ready setup. Please create one by running `pip freeze > requirements.txt` after installing all dependencies.*
 
 3.  **Environment setup**
     Create a `.env` file in the root directory for your environment variables.
