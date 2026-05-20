@@ -55,7 +55,7 @@ Follow these steps to get your development environment up and running.
 
 Before you begin, ensure you have the following installed:
 
--   **Python** (3.9 or higher recommended)
+-   **Python** (3.10 or higher recommended)
 -   **pip** (Python package installer)
 -   **Git**
 
@@ -72,9 +72,7 @@ Before you begin, ensure you have the following installed:
     ```bash
     python -m venv venv
     source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-    # TODO: Create a requirements.txt file in the root or api/ directory.
-    # For now, install known dependencies manually or create a requirements.txt from config.py analysis.
-    pip install fastapi uvicorn "python-dotenv>=1.0.0" chromadb requests langchain openai tiktoken
+   
     ```
     *Note: A `requirements.txt` file is crucial for a production-ready setup. Please create one by running `pip freeze > requirements.txt` after installing all dependencies.*
 
