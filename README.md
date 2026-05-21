@@ -161,8 +161,8 @@ The application uses environment variables for sensitive information and configu
 | Variable        | Description                                       | Default        | Required |
 |-----------------|---------------------------------------------------|----------------|----------|
 | `OLLAMA_URL`| Ollama URL to check weather it is running or not| http://localhost:11434 | Yes |
-| `CHROMA_DB_PATH`| Local path where ChromaDB will persist its data   | `./chroma_db`  | No       |
-| `FASTAPI_HOST`  | Host for the FastAPI server                       | `0.0.0.0`      | No       |
+| `CHROMA_DB_PATH`| Local path where ChromaDB will persist its data   | `./chroma_db`  | Yes       |
+| `EMBEDDING_MODEL`  | Ollama model for generating embeddings          | `nomic-embed-text`      | Yes       |
 | `FASTAPI_PORT`  | Port for the FastAPI server                       | `8000`         | No       |
 
 ### Configuration Files
