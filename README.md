@@ -83,10 +83,9 @@ Before you begin, ensure you have the following installed:
     Configure your environment variables in the newly created `.env` file:
     ```
     # --- LLM Configuration ---
-    OPENAI_API_KEY="YOUR_OPENAI_API_KEY" # Required for OpenAI embeddings and chat models
-    # Alternatively, specify a different LLM provider and its API key
-    # LLM_PROVIDER="HUGGINGFACE"
-    # HUGGINGFACE_API_KEY="YOUR_HUGGINGFACE_API_KEY"
+    #  OLLAMA 
+    # URL where Ollama is running
+    OLLAMA_BASE_URL = http://localhost:11434
 
     # --- ChromaDB Configuration ---
     CHROMA_DB_PATH="./chroma_db" # Path where ChromaDB will store its data (local persistent storage)
