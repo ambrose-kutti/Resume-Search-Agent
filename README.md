@@ -1,4 +1,4 @@
-# 🚀 Serch for T..h
+# 🚀 Search for T..h
 
 <div align="center">
 
