@@ -13,7 +13,7 @@
 
 ## 📖 Overview
 
-The Resume Search Agent is a powerful, AI-driven application designed to revolutionize the talent acquisition process. Leveraging large language models (LLMs) and vector database technology (ChromaDB), this agent enables recruiters and hiring managers to semantically search through vast resume datasets, moving beyond traditional keyword matching. It features an intelligent ingestion pipeline for processing resumes and a robust search mechanism that understands context and intent, making it an indispensable tool for efficient and accurate candidate discovery.
+The Search Agent is a powerful, AI-driven application designed to revolutionize the talent acquisition process. Leveraging large language models (LLMs) and vector database technology (ChromaDB), this agent enables recruiters and hiring managers to semantically search through vast resume datasets, moving beyond traditional keyword matching. It features an intelligent ingestion pipeline for processing resumes and a robust search mechanism that understands context and intent, making it an indispensable tool for efficient and accurate candidate discovery.
 
 ## ✨ Features
 
@@ -27,7 +27,6 @@ The Resume Search Agent is a powerful, AI-driven application designed to revolut
 
 ## 🖥️ Screenshots
 
-<!-- TODO: Add actual screenshots of the application, showing search interface, results, and potentially ingestion status. -->
 Home Page with Toggle modes
 
 <img width="1219" height="623" alt="Screenshot 2026-05-23 151726" src="https://github.com/user-attachments/assets/d9419115-c630-46af-bedb-b1c9d7d90760" />
